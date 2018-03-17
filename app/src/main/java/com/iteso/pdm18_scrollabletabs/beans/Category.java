@@ -39,6 +39,11 @@ public class Category implements Parcelable {
         dest.writeString(this.name);
     }
 
+    public Category(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
     public Category() {
     }
 
