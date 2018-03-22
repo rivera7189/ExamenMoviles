@@ -4,23 +4,21 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import com.iteso.pdm18_scrollabletabs.beans.Category;
+import com.iteso.pdm18_scrollabletabs.beans.City;
 
 import java.util.ArrayList;
 
 /**
- * Created by Carlos Rivera on 16/03/2018.
+ * Created by Carlos Rivera on 21/03/2018.
  */
 
-public class CategoryControl {
-
-
-    public void addCategory(Category category, DataBaseHandler dh){
+public class CityControl {
+    public void addCity(City city, DataBaseHandler dh){
         SQLiteDatabase db = dh.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put("id", category.getId());
-        values.put("name", category.getName());
-        db.insert("Category", null, values);
+        values.put("id", city.getId());
+        values.put("name", city.getName());
+        db.insert("City", null, values);
         try{
             db.close();
         }catch(Exception e){
@@ -31,16 +29,18 @@ public class CategoryControl {
 
     }
 
-    public ArrayList<Category> getCategory(DataBaseHandler dh){
-        ArrayList<Category> categories = new ArrayList<>();
-        String select = "SELECT id, name FROM Category";
+
+    public ArrayList<City> getCities(DataBaseHandler dh){
+        ArrayList<City> cities = new ArrayList<>();
+        String select = "SELECT id, name FROM City";
         SQLiteDatabase db = dh.getReadableDatabase();
         Cursor cursor = db.rawQuery(select, null);
         while(cursor.moveToNext()){
-            Category category = new Category();
-            category.setId(cursor.getInt(0));
-            category.setName(cursor.getString(1));
-            categories.add(category);
+            City city = new City();
+            city.setId(cursor.getInt(0));
+            city.setName(cursor.getString(1));
+
+            cities.add(city);
         }
         try{
             cursor.close(); //Siempre cerrar primero el cursor
@@ -49,9 +49,6 @@ public class CategoryControl {
         }
         db = null;
         cursor = null;
-        return categories;
+        return cities;
     }
-
-
-
 }

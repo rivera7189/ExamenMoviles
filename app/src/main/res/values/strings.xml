@@ -10,4 +10,6 @@
     <string name="section1">Technology</string>
     <string name="section2">Home</string>
     <string name="section3">Electronics</string>
+    <string name="title_act">Introduce title</string>
+    <string name="save">Save</string>
 </resources>

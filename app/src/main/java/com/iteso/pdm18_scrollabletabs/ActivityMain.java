@@ -1,7 +1,10 @@
 package com.iteso.pdm18_scrollabletabs;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.provider.SyncStateContract;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -11,10 +14,20 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
+import com.iteso.pdm18_scrollabletabs.beans.ItemProduct;
+import com.iteso.pdm18_scrollabletabs.database.CategoryControl;
+import com.iteso.pdm18_scrollabletabs.database.CityControl;
+import com.iteso.pdm18_scrollabletabs.database.DataBaseHandler;
+import com.iteso.pdm18_scrollabletabs.database.ItemProductControl;
+import com.iteso.pdm18_scrollabletabs.database.StoreControl;
 import com.iteso.pdm18_scrollabletabs.tools.Constant;
+
+import java.util.ArrayList;
 
 /**
  * @author Oscar Vargas
@@ -22,31 +35,86 @@ import com.iteso.pdm18_scrollabletabs.tools.Constant;
  */
 public class ActivityMain extends AppCompatActivity {
 
-    private static final int TOTAL_PAGES = 3;
-    private FragmentTechnology fragmentTechnology;
-    private FragmentHome fragmentHome;
+    private SectionsPagerAdapter mSectionsPagerAdapter;
+    private ViewPager mViewPager;
+    private FragmentTechnology fragmentTecnology;
     private FragmentElectronics fragmentElectronics;
-
+    private FragmentHome fragmentHome;
+    CityControl cityController;
+    StoreControl storeControl;
+    CategoryControl categoryControl;
+    ItemProductControl productControl;
+    DataBaseHandler dh;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        TabLayout tabLayout = findViewById(R.id.tabs);
-
+        dh = DataBaseHandler.getInstance(this);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         setSupportActionBar(toolbar);
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        SectionsPagerAdapter mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
+        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
         // Set up the ViewPager with the sections adapter.
-        ViewPager mViewPager = findViewById(R.id.container);
+        mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
         tabLayout.setupWithViewPager(mViewPager);
 
-    }
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(ActivityMain.this,ActivityItem.class);
+                startActivityForResult(intent,12);
 
+            }
+        });
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(ActivityMain.class.getSimpleName(),"result");
+        switch (requestCode){
+            case 9999:
+                if(resultCode == Activity.RESULT_OK){
+                    ItemProduct product = data.getParcelableExtra("Producto");
+                    if(product != null){
+                        Log.d(ActivityMain.class.getSimpleName(),product.getTitle());
+                        fragmentTecnology.onChange(product);
+                    }
+                }
+                break;
+            case 12:
+                if(resultCode == Activity.RESULT_OK){
+                    ArrayList<ItemProduct> products ;
+                    ItemProductControl itemProductControl = new ItemProductControl();
+                    switch (data.getIntExtra("category",-1)){
+
+                        case 0:
+                            if(fragmentTecnology!= null) {
+                                ItemProduct product = data.getParcelableExtra("product");
+                                fragmentTecnology.onChange(product);
+                            }
+                            break;
+                        case 1:
+                            if(fragmentHome != null) {
+                                ItemProduct product = data.getParcelableExtra("product");
+                                fragmentHome.onChange(product);
+                            }
+                            break;
+                        case 2:
+                            if(fragmentElectronics != null) {
+                                ItemProduct product = data.getParcelableExtra("product");
+                                fragmentElectronics.onChange(product);
+                            }
+                            break;
+                    }
+                }
+                break;
+
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -55,123 +123,38 @@ public class ActivityMain extends AppCompatActivity {
         return true;
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-       switch (id){
-           case R.id.action_LogOut : 
-               logIn();
-               break;
-           case R.id.action_PrivacyPolicy :
-               privacy();
-               break;
-       }
 
-        return super.onOptionsItemSelected(item);
-    }
 
-    private void privacy() {
-        Intent intent = new Intent(ActivityMain.this,ActivityPrivacyPolicy.class);
-        startActivity(intent);
-    }
-
-    private void logIn() {
-        SharedPreferences sharedPreferences = getSharedPreferences("com.iteso.store.USER_PREFERENCE",MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.clear();
-        editor.apply();
-        Intent intent = new Intent(ActivityMain.this,ActivityLogin.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-        finish();
-
-    }
-
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
-     * one of the sections/tabs/pages.
-     */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        SectionsPagerAdapter(FragmentManager fm) {
+        public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
         @Override
         public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            switch (position) {
-                case Constant.FRAGMENT_TECHNOLOGY:
-                    if (fragmentTechnology == null)
-                        fragmentTechnology = new FragmentTechnology();
-                    return fragmentTechnology;
-                case Constant.FRAGMENT_HOME:
-                    if (fragmentHome == null)
-                        fragmentHome = new FragmentHome();
-                    return fragmentHome;
-                case Constant.FRAGMENT_ELECTRONICS:
-                    if (fragmentElectronics == null)
-                        fragmentElectronics = new FragmentElectronics();
-                    return fragmentElectronics;
-                default:
-                    return new FragmentTechnology();
+            switch(position){
+                case 0:return (fragmentTecnology==null)?fragmentTecnology = new FragmentTechnology():fragmentTecnology;
+                case 1: return (fragmentHome==null)?fragmentHome = new FragmentHome():fragmentHome;
+                case 2: return (fragmentElectronics==null)?fragmentElectronics = new FragmentElectronics():fragmentElectronics;
             }
+            return null;
         }
 
         @Override
         public int getCount() {
-            return TOTAL_PAGES;
+            return 3;
         }
 
         @Override
         public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case Constant.FRAGMENT_TECHNOLOGY:
-                    return getString(R.string.section1);
-                case Constant.FRAGMENT_HOME:
-                    return getString(R.string.section2);
-                case Constant.FRAGMENT_ELECTRONICS:
-                    return getString(R.string.section3);
+            switch(position){
+                case 0: return "Technology";
+                case 1: return "Home";
+                case 2: return "Electronics";
             }
             return null;
         }
     }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode){
-            case Constant.ACTIVITY_DETAIL:
-                if(resultCode == RESULT_OK){
-                    if(data.getExtras() != null) {
-                        int fragment = data.getExtras().getInt(Constant.EXTRA_FRAGMENT);
-                        switch (fragment) {
-                            case Constant.FRAGMENT_TECHNOLOGY:
-                                fragmentTechnology.onActivityResult(requestCode, resultCode, data);
-                                break;
-                            case Constant.FRAGMENT_HOME:
-                                fragmentHome.onActivityResult(requestCode, resultCode, data);
-                                break;
-                            case Constant.FRAGMENT_ELECTRONICS:
-                                fragmentElectronics.onActivityResult(requestCode, resultCode, data);
-                                break;
-                        }
-                    }
-                }
-                break;
-        }
-    }
 }
-
-
-
-
-
-
-

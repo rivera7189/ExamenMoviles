@@ -12,6 +12,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.iteso.pdm18_scrollabletabs.beans.ItemProduct;
+import com.iteso.pdm18_scrollabletabs.database.DataBaseHandler;
+import com.iteso.pdm18_scrollabletabs.database.ItemProductControl;
 import com.iteso.pdm18_scrollabletabs.tools.Constant;
 
 import java.util.ArrayList;
@@ -24,6 +26,9 @@ public class FragmentElectronics extends Fragment {
 
 
     RecyclerView recyclerView;
+    private static final String ARG_SECTION_NUMBER = "section_number";
+    public AdapterProduct adapterProduct;
+    ArrayList<ItemProduct> products ;
 
     public FragmentElectronics() {
         // Required empty public constructor
@@ -33,9 +38,24 @@ public class FragmentElectronics extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_technology, container, false);
-        recyclerView = rootView.findViewById(R.id.fragment_recycler);
+
+        View rootView = inflater.inflate(R.layout.fragment_activity_main, container, false);
+
+
+        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+
+
+        RecyclerView recyclerView = rootView.findViewById(R.id.fragment_recycler_view);
+
+        ItemProductControl itemProductControl = new ItemProductControl();
+        DataBaseHandler dh = DataBaseHandler.getInstance(this.getContext());
+        products = itemProductControl.getProductsByCategory(0,dh);
+        adapterProduct = new AdapterProduct(products);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setLayoutManager(mLayoutManager);
+        recyclerView.setAdapter(adapterProduct);
+        // TextView textView = (TextView) rootView.findViewById(R.id.section_label);
+        // textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
         return rootView;
     }
 
@@ -50,8 +70,6 @@ public class FragmentElectronics extends Fragment {
         recyclerView.setLayoutManager(mLayoutManager);
 
         ArrayList<ItemProduct> products = new ArrayList<>();
-        products.add(new ItemProduct(6, "Refrigerador", "BestBuy", "Zapopan", "3312345678", "Lorem Ipsum ....", Constant.TYPE_REFRIGERATOR));
-        products.add(new ItemProduct(7, "Micro", "Palacio de Hierro", "Zapopan", "3312345678", "Lorem Ipsum ....", Constant.TYPE_MICRO));
 
         AdapterProduct adapterProduct = new AdapterProduct(Constant.FRAGMENT_ELECTRONICS, getActivity(), products);
         recyclerView.setAdapter(adapterProduct);
@@ -59,6 +77,11 @@ public class FragmentElectronics extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void onChange(ItemProduct product){
+        products.add(product);
+        adapterProduct.notifyDataSetChanged();
     }
 
 }

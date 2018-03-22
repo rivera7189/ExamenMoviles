@@ -10,16 +10,17 @@ import android.os.Parcelable;
  * @version 1.0.1 Add Parcelable Interfaz and code parameter
  */
 
-public class ItemProduct implements Parcelable{
-    private int code;
-    private String title;
-    private String location;
-    private String phone;
-    private String description;
-    private Integer image;
+public class ItemProduct implements Parcelable {
+    private	int	code;
+    private	String	title;
+    private	String	description;
+    private	Integer	image;
+    private	Store	store;
+    private	Category	category;
 
-    private Category category;
-    private Store store;
+    public ItemProduct() {
+
+    }
 
     public int getCode() {
         return code;
@@ -35,22 +36,6 @@ public class ItemProduct implements Parcelable{
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
     }
 
     public String getDescription() {
@@ -69,6 +54,14 @@ public class ItemProduct implements Parcelable{
         this.image = image;
     }
 
+    public Store getStore() {
+        return store;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+    }
+
     public Category getCategory() {
         return category;
     }
@@ -77,12 +70,13 @@ public class ItemProduct implements Parcelable{
         this.category = category;
     }
 
-    public Store getStore() {
-        return store;
-    }
-
-    public void setStore(Store store) {
+    public ItemProduct(int code, String title, String description, Integer image, Store store, Category category) {
+        this.code = code;
+        this.title = title;
+        this.description = description;
+        this.image = image;
         this.store = store;
+        this.category = category;
     }
 
     @Override
@@ -94,26 +88,19 @@ public class ItemProduct implements Parcelable{
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeInt(this.code);
         dest.writeString(this.title);
-        dest.writeString(this.location);
-        dest.writeString(this.phone);
         dest.writeString(this.description);
         dest.writeValue(this.image);
-        dest.writeParcelable(this.category, flags);
         dest.writeParcelable(this.store, flags);
-    }
-
-    public ItemProduct() {
+        dest.writeParcelable(this.category, flags);
     }
 
     protected ItemProduct(Parcel in) {
         this.code = in.readInt();
         this.title = in.readString();
-        this.location = in.readString();
-        this.phone = in.readString();
         this.description = in.readString();
         this.image = (Integer) in.readValue(Integer.class.getClassLoader());
-        this.category = in.readParcelable(Category.class.getClassLoader());
         this.store = in.readParcelable(Store.class.getClassLoader());
+        this.category = in.readParcelable(Category.class.getClassLoader());
     }
 
     public static final Creator<ItemProduct> CREATOR = new Creator<ItemProduct>() {
@@ -127,4 +114,4 @@ public class ItemProduct implements Parcelable{
             return new ItemProduct[size];
         }
     };
-}
+};

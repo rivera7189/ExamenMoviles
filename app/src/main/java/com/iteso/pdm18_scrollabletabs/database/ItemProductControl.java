@@ -5,9 +5,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.iteso.pdm18_scrollabletabs.beans.Category;
-import com.iteso.pdm18_scrollabletabs.beans.City;
 import com.iteso.pdm18_scrollabletabs.beans.ItemProduct;
 import com.iteso.pdm18_scrollabletabs.beans.Store;
+import com.iteso.pdm18_scrollabletabs.beans.StoreProduct;
 
 import java.util.ArrayList;
 
@@ -17,21 +17,25 @@ import java.util.ArrayList;
 
 public class ItemProductControl {
 
-    public void addItemProduct(ItemProduct item, DataBaseHandler dh){
+    public void addProduct(ItemProduct product, DataBaseHandler dh){
+        StoreProductControl storeProductControll = new StoreProductControl();
+
         SQLiteDatabase db = dh.getWritableDatabase();
         ContentValues values = new ContentValues();
-        values.put("idproduct", item.getCode());
-        values.put("title", item.getTitle());
-        values.put("image", item.getImage());
-        values.put("idcategory",item.getCategory().getId());
-
-        ContentValues valuesf = new ContentValues();
-
-        valuesf.put("idproduct",item.getCode());
-        valuesf.put("idstore",item.getStore().getId());
-
+        values.put("idproduct", product.getCode());
+        values.put("title", product.getTitle());
+        values.put("image",product.getImage());
+        values.put("idcategory",product.getCategory().getId());
+        values.put("description",product.getDescription());
         db.insert("Product", null, values);
-        db.insert("StoreProduct",null, valuesf);
+        int size = storeProductControll.getSize(dh);
+
+        StoreProduct storeProduct = new StoreProduct();
+        storeProduct.setId(size+1);
+        storeProduct.setIdproduct(product.getCode());
+        storeProduct.setIdstore(product.getStore().getId());
+        storeProductControll.addStoreProduct(storeProduct,dh);
+
 
         try{
             db.close();
@@ -40,60 +44,82 @@ public class ItemProductControl {
         }
         db = null;
         values = null;
-        valuesf = null;
 
     }
 
-    public ArrayList<ItemProduct> getItemProductsByCategory(int idCategory, DataBaseHandler dh){
-        ArrayList<ItemProduct> products = new ArrayList<>();
 
-        String select = "SELECT" +
-                "idproduct, " +
-                "title, " +
-                "image, " +
-                "idcategory " +
-                "Category.id " +
-                "Category.name " +
-                "Store.id," +
-                "Store.name, " +
-                "Store.phone, " +
-                "Store.idcity, " +
-                "Store.thumbnail, " +
-                "Store.latitude, " +
-                "Store.longitude, " +
-                "City.id, " +
-                "City.name, " +
-                "FROM Product " +
-                "INNER JOIN Category ON Product.idcategory = Category.id " +
-                "INNER JOIN StoreProduct ON Product.id = StoreProduct.idproduct" +
-                "INNER JOIN Store ON Store.idstore = Store.id" +
-                "INNER JOIN City ON Store.idcity = City.id" +
-                "WHERE Product.idcategory = " + idCategory;
+    public ArrayList<ItemProduct> getProductsByCategory(int idCategory,DataBaseHandler dh){
+        ArrayList<ItemProduct> products = new ArrayList<>();
+        String select = "SELECT p.idproduct, p.title, p.image, p.description, c.id, c.name, sp.idstore "+
+                "FROM Product p, Category c, StoreProduct sp " +
+                "WHERE sp.idproduct = p.idproduct AND p.idcategory = c.id AND c.id = "+idCategory;
 
         SQLiteDatabase db = dh.getReadableDatabase();
         Cursor cursor = db.rawQuery(select, null);
-        while(cursor.moveToNext()){
-            ItemProduct itemProduct = new ItemProduct();
-            itemProduct.setCode(cursor.getInt(0));
+        StoreControl storeControl = new StoreControl();
+        ItemProduct itemProduct = new ItemProduct();
+        while(cursor.moveToNext()) {
+
+            itemProduct.setCode(cursor.getInt(0 ));
             itemProduct.setTitle(cursor.getString(1));
             itemProduct.setImage(cursor.getInt(2));
-            Category category = new Category(cursor.getInt(3),
-                                             cursor.getString(4));
+            itemProduct.setDescription(cursor.getString(3));
+
+            Category category = new Category();
+            category.setId(cursor.getInt(4));
+            category.setName(cursor.getString(5));
             itemProduct.setCategory(category);
 
-            Store store = new Store();
+            Store store = storeControl.getStoreById(cursor.getInt(6),dh);
+            itemProduct.setStore(store);
             products.add(itemProduct);
         }
-        try{
-            cursor.close(); //Siempre cerrar primero el cursor
+        try {
+            cursor.close();
             db.close();
-        }catch(Exception e){
+        }catch (Exception e) {
         }
-        db = null;
+
         cursor = null;
+        db = null;
         return products;
     }
 
+    public ArrayList<ItemProduct> getProducts(DataBaseHandler dh){
+        ArrayList<ItemProduct> products = new ArrayList<>();
+        String select = "SELECT p.idproduct, p.title, p.image, p.description, c.id, c.name, sp.idstore "+
+                "FROM Product p, Category c, StoreProduct sp " +
+                "WHERE sp.idproduct = p.idproduct AND p.idcategory = c.id " ;
 
+        SQLiteDatabase db = dh.getReadableDatabase();
+        Cursor cursor = db.rawQuery(select, null);
+        StoreControl storeControl = new StoreControl();
+        ItemProduct itemProduct = new ItemProduct();
+        while(cursor.moveToNext()) {
+
+            itemProduct.setCode(cursor.getInt(0 ));
+            itemProduct.setTitle(cursor.getString(1));
+            itemProduct.setImage(cursor.getInt(2));
+            itemProduct.setDescription(cursor.getString(3));
+
+            Category category = new Category();
+            category.setId(cursor.getInt(4));
+            category.setName(cursor.getString(5));
+            itemProduct.setCategory(category);
+
+            Store store = storeControl.getStoreById(cursor.getInt(6),dh);
+            itemProduct.setStore(store);
+            products.add(itemProduct);
+        }
+        try {
+            cursor.close();
+            db.close();
+        }catch (Exception e) {
+        }
+
+        cursor = null;
+        db = null;
+        return products;
+    }
 
 }
