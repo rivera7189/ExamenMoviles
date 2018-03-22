@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 
@@ -21,20 +22,28 @@ import java.util.ArrayList;
 
 public class ActivityItem extends AppCompatActivity {
     EditText title;
-    Spinner categories,stores, images;
+    Button save;
+    Spinner categoriesSpinner,storesSpinner, images;
     ArrayList<Category> categoriesArray;
     ArrayList<Store> storesArray;
-    ArrayList<String> imagesArray;
+    ArrayList<String> imagesArray, categories, stores;
     DataBaseHandler dh;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item);
         title = findViewById(R.id.title_activity);
-        categories = findViewById(R.id.category_activity);
-        stores = findViewById(R.id.stores_activity);
+        categoriesSpinner = findViewById(R.id.category_activity);
+        storesSpinner = findViewById(R.id.stores_activity);
         images = findViewById(R.id.image_activity);
+        save = findViewById(R.id.btn_save_activity_item);
 
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Save(view);
+            }
+        });
 
         CategoryControl categoryControll = new CategoryControl();
         StoreControl storeControl = new StoreControl();
@@ -42,23 +51,35 @@ public class ActivityItem extends AppCompatActivity {
         dh = DataBaseHandler.getInstance(ActivityItem.this);
 
         categoriesArray = categoryControll.getCategory(dh);
+        categories = new ArrayList<>();
+
+        for(int i = 0; i < categoriesArray.size(); i++) {
+            categories.add(categoriesArray.get(i).getName());
+        }
+
         storesArray = storeControl.getStore(dh);
+        stores = new ArrayList<>();
+
+        for(int i = 0; i < storesArray.size(); i++) {
+            stores.add(storesArray.get(i).getName());
+        }
+
         imagesArray = new ArrayList<String>();
         imagesArray.add("Mac");
         imagesArray.add("AlienWare");
 
-        ArrayAdapter<Category> categoryAdapter = new ArrayAdapter<Category>(this, android.R.layout.simple_list_item_1, categoriesArray);
-        ArrayAdapter<Store>  storeAdapter = new ArrayAdapter<Store>(this,android.R.layout.simple_list_item_1,storesArray);
+        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, categories);
+        ArrayAdapter<String>  storeAdapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1, stores);
         ArrayAdapter<String> imagesAdapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,imagesArray);
 
-        categories.setAdapter(categoryAdapter);
-        stores.setAdapter(storeAdapter);
+        categoriesSpinner.setAdapter(categoryAdapter);
+        storesSpinner.setAdapter(storeAdapter);
         images.setAdapter(imagesAdapter);
 
     }
     public void Save(View view){
-        Category category = (Category) categories.getSelectedItem();
-        Store store = (Store) stores.getSelectedItem();
+        Category category = categoriesArray.get(categoriesSpinner.getSelectedItemPosition());
+        Store store = storesArray.get(storesSpinner.getSelectedItemPosition());
         ItemProductControl itemProductControll = new ItemProductControl();
         ArrayList<ItemProduct> products = itemProductControll.getProducts(dh);
 
@@ -67,7 +88,7 @@ public class ActivityItem extends AppCompatActivity {
 
         itemProductControll.addProduct(product,dh);
         Intent intent = new Intent();
-        intent.putExtra("category",categories.getSelectedItemPosition());
+        intent.putExtra("category",category);
         intent.putExtra("product",product);
         setResult(RESULT_OK, intent);
         finish();

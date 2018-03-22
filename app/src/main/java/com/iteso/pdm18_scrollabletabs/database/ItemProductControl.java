@@ -50,7 +50,7 @@ public class ItemProductControl {
 
     public ArrayList<ItemProduct> getProductsByCategory(int idCategory,DataBaseHandler dh){
         ArrayList<ItemProduct> products = new ArrayList<>();
-        String select = "SELECT p.idproduct, p.title, p.image, p.description, c.id, c.name, sp.idstore "+
+        String select = "SELECT p.idproduct, p.title, p.image, c.id, c.name, sp.idstore "+
                 "FROM Product p, Category c, StoreProduct sp " +
                 "WHERE sp.idproduct = p.idproduct AND p.idcategory = c.id AND c.id = "+idCategory;
 
@@ -63,14 +63,14 @@ public class ItemProductControl {
             itemProduct.setCode(cursor.getInt(0 ));
             itemProduct.setTitle(cursor.getString(1));
             itemProduct.setImage(cursor.getInt(2));
-            itemProduct.setDescription(cursor.getString(3));
+
 
             Category category = new Category();
-            category.setId(cursor.getInt(4));
-            category.setName(cursor.getString(5));
+            category.setId(cursor.getInt(3));
+            category.setName(cursor.getString(4));
             itemProduct.setCategory(category);
 
-            Store store = storeControl.getStoreById(cursor.getInt(6),dh);
+            Store store = storeControl.getStoreById(cursor.getInt(5),dh);
             itemProduct.setStore(store);
             products.add(itemProduct);
         }
@@ -87,7 +87,7 @@ public class ItemProductControl {
 
     public ArrayList<ItemProduct> getProducts(DataBaseHandler dh){
         ArrayList<ItemProduct> products = new ArrayList<>();
-        String select = "SELECT p.idproduct, p.title, p.image, p.description, c.id, c.name, sp.idstore "+
+        String select = "SELECT p.idproduct, p.title, p.image, c.id, c.name, sp.idstore "+
                 "FROM Product p, Category c, StoreProduct sp " +
                 "WHERE sp.idproduct = p.idproduct AND p.idcategory = c.id " ;
 
@@ -100,14 +100,13 @@ public class ItemProductControl {
             itemProduct.setCode(cursor.getInt(0 ));
             itemProduct.setTitle(cursor.getString(1));
             itemProduct.setImage(cursor.getInt(2));
-            itemProduct.setDescription(cursor.getString(3));
 
             Category category = new Category();
-            category.setId(cursor.getInt(4));
-            category.setName(cursor.getString(5));
+            category.setId(cursor.getInt(3));
+            category.setName(cursor.getString(4));
             itemProduct.setCategory(category);
 
-            Store store = storeControl.getStoreById(cursor.getInt(6),dh);
+            Store store = storeControl.getStoreById(cursor.getInt(5),dh);
             itemProduct.setStore(store);
             products.add(itemProduct);
         }

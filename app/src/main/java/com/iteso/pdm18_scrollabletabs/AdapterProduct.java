@@ -33,11 +33,8 @@ import java.util.ArrayList;
 class AdapterProduct extends RecyclerView.Adapter<AdapterProduct.ViewHolder> {
     ArrayList<ItemProduct> products;
 
-    public AdapterProduct(ArrayList<ItemProduct> products) {
-        this.products = products;
-    }
-
     public AdapterProduct(int fragmentElectronics, FragmentActivity activity, ArrayList<ItemProduct> products) {
+        this.products = products;
     }
 
     @Override

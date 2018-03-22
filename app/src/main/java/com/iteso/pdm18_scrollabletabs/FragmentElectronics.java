@@ -50,30 +50,18 @@ public class FragmentElectronics extends Fragment {
         ItemProductControl itemProductControl = new ItemProductControl();
         DataBaseHandler dh = DataBaseHandler.getInstance(this.getContext());
         products = itemProductControl.getProductsByCategory(0,dh);
-        adapterProduct = new AdapterProduct(products);
+        AdapterProduct adapterProduct = new AdapterProduct(Constant.FRAGMENT_ELECTRONICS, getActivity(), products);
+        recyclerView.setAdapter(adapterProduct);
+
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(mLayoutManager);
-        recyclerView.setAdapter(adapterProduct);
+
         // TextView textView = (TextView) rootView.findViewById(R.id.section_label);
         // textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
         return rootView;
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
 
-
-        recyclerView.setHasFixedSize(true);
-        // Use a linear layout manager
-        LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
-        recyclerView.setLayoutManager(mLayoutManager);
-
-        ArrayList<ItemProduct> products = new ArrayList<>();
-
-        AdapterProduct adapterProduct = new AdapterProduct(Constant.FRAGMENT_ELECTRONICS, getActivity(), products);
-        recyclerView.setAdapter(adapterProduct);
-    }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
